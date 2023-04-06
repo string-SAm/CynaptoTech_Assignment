@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <title>WebCam</title>
+</head>
+
+<body>
+    <div id="video-container">
+        <video id="video"></video>
+        <button id="toggle-btn">Start Webcam</button>
+        <button id="capture-btn">Capture</button>
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const captureBtn = document.getElementById('capture-btn');
+        isCameraOn = false
+
+        // Toggle webcam on button click
+        toggleBtn.addEventListener('click', () => {
+            if (!isCameraOn) {
+                // Get user media
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        video.srcObject = stream;
+                        video.play();
+                        toggleBtn.innerText = 'Close Webcam';
+                        isCameraOn = true;
+                    })
+                    .catch(err => console.error(err));
+            } else {
+                // Stop video stream
+                const stream = video.srcObject;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+                toggleBtn.innerText = 'Start Webcam';
+                isCameraOn = false;
+            }
+        });
+
+        // Capture image from video stream
+        captureBtn.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Get base64-encoded image data
+            const imageData = canvas.toDataURL('image/png');
+
+            // Do something with the image data (e.g. upload to server)
+            console.log(imageData);
+        });
+
+    </script>
+</body>
+
+</html>

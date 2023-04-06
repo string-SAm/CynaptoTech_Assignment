@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Student Record Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <form id="studentForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br>
+
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone" required><br>
+
+        <label for="address">Address:</label>
+        <textarea id="address" name="address" required></textarea><br>
+
+        <label for="gender">Gender</label>
+        <input type="text" id="gender" name="gender" required></input><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <table id="studentTable" border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Gender</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Open the database connection
+            var db = openDatabase(
+                "student_db",
+                "1.0",
+                "Student Database",
+                6 * 1024 * 1024  //65535
+            );
+
+            // Create the student table if it doesn't exist
+            db.transaction(function (tx) {
+                tx.executeSql(
+                    "CREATE TABLE IF NOT EXISTS student (name, email, phone, address, gender)"
+                )
+            });
+
+            // Insert student data into the database on form submit
+            $("#studentForm").on("submit", function (e) {
+                e.preventDefault();
+
+                var name = $("#name").val();
+                var email = $("#email").val();
+                var phone = $("#phone").val();
+                var address = $("#address").val();
+                var gender = $("#gender").val();
+
+                db.transaction(function (tx) {
+                    tx.executeSql(
+                        "INSERT INTO student (name, email, phone, address,gender) VALUES (?, ?, ?, ?, ?)",
+                        [name, email, phone, address, gender]
+                    );
+                });
+
+                $("#studentForm")[0].reset();
+            });
+
+            // Select all student data from the database and display it in the table
+            db.transaction(function (tx) {
+                tx.executeSql("SELECT * FROM student", [], function (tx, results) {
+                    var len = results.rows.length;
+                    var studentTable = $("#studentTable tbody");
+
+                    for (var i = 0; i < len; i++) {
+                        var name = results.rows.item(i).name;
+                        var email = results.rows.item(i).email;
+                        var phone = results.rows.item(i).phone;
+                        var address = results.rows.item(i).address;
+                        var gender = results.rows.item(i).gender;
+
+                        studentTable.append(
+                            "<tr><td>" +
+                            name +
+                            "</td><td>" +
+                            email +
+                            "</td><td>" +
+                            phone +
+                            "</td><td>" +
+                            address +
+                            "</td><td>" +
+                            gender +
+                            "</td></tr>"
+                        );
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+
+</html>
